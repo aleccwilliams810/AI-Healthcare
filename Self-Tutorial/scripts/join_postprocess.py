@@ -94,17 +94,20 @@ def apply_embeddings_function(df):
     embedding_df = pd.DataFrame(embedding_cols, index=df.index)
 
     # Return the new  DataFrame and the original DataFrame with columns dropped
-    return embedding_df, string_columns 
+    return embedding_df, df[string_columns]
 
-def apply_kmeans(df, embedding_df, string_columns):
+def apply_kmeans(df, embedding_df, original_string_df):
     embedding_cols = [col for col in embedding_df.columns]
 
     cluster_labels = {}
 
-    for col in embedding_cols:
+    for i, col in enumerate(embedding_cols):
 
         # Determine cluster num
-        n_clusters = determine_n_clusters(embedding_df[col].nunique())
+        original_col = original_string_df.columns[i]
+        unique_count = original_string_df[original_col].nunique()
+
+        n_clusters = determine_n_clusters(unique_count)
         
         # Prepare cluster matrix
         embedding_matrix = np.vstack(embedding_df[col].values)
@@ -118,7 +121,7 @@ def apply_kmeans(df, embedding_df, string_columns):
     # Add labels
     df = pd.concat([df, pd.DataFrame(cluster_labels, index=df.index)], axis=1)
 
-    return df.drop(columns=string_columns)
+    return df.drop(columns=original_string_df.columns)
 
 def determine_n_clusters(unique_count):
     # More clusters for high-variance columns
