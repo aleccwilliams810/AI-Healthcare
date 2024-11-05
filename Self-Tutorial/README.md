@@ -27,8 +27,8 @@
 
 ## How to Run the Project
 **Clone Repo**
-    - git clone https://github.com/username/project-name.git
-    - cd project-name/Tutorial
+    - git clone https://github.com/aleccwilliams810/AI-Healthcare.git
+    - cd AI-Healthcare/Self-Tutorial
 
 **Venv Setup**
    - python -m venv venv
@@ -41,7 +41,7 @@
 
 ## Key Features
 **LGBM Model**: Fast and robust gradient boosting model
-**Feature Engineering**: Diagnosis code parsing, making the most out of minimal available data
+**Feature Engineering**: Diagnosis code parsing, clustering diagnosis descriptions, making the most out of minimal available data
 **Evaluation**: AUC-ROC, precision, recall, etc.
 
 ## Dependencies
