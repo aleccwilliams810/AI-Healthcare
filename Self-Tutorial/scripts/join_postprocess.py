@@ -40,8 +40,8 @@ def join_data():
 def postprocess_data(df):
     df = calc_age(df)
 
-    df, embedding_df = apply_embeddings_function(df)
-    df = apply_kmeans(df, embedding_df)
+    embedding_df, string_columns = apply_embeddings_function(df)
+    df = apply_kmeans(df, embedding_df, string_columns)
 
     save_processed(df, 'model_inputs.csv')
 
@@ -94,9 +94,9 @@ def apply_embeddings_function(df):
     embedding_df = pd.DataFrame(embedding_cols, index=df.index)
 
     # Return the new  DataFrame and the original DataFrame with columns dropped
-    return df.drop(columns=string_columns), embedding_df
+    return embedding_df, string_columns 
 
-def apply_kmeans(df, embedding_df):
+def apply_kmeans(df, embedding_df, string_columns):
     embedding_cols = [col for col in embedding_df.columns]
 
     cluster_labels = {}
@@ -118,7 +118,7 @@ def apply_kmeans(df, embedding_df):
     # Add labels
     df = pd.concat([df, pd.DataFrame(cluster_labels, index=df.index)], axis=1)
 
-    return df
+    return df.drop(columns=string_columns)
 
 def determine_n_clusters(unique_count):
     # More clusters for high-variance columns
