@@ -70,7 +70,7 @@ nlp = spacy.load("en_core_sci_md")
 def get_embeddings(texts):
     #nlp.pipe enables batch processing to improve efficiency
     embeddings = []
-    for doc_batch in nlp.pipe(texts, batch_size=1000, n_process=3, disable=["parser", "tagger"]):
+    for doc_batch in nlp.pipe(texts, batch_size=1000, n_process=4, disable=["parser", "tagger"]):
         embeddings.append(doc_batch.vector)
     return embeddings
 
