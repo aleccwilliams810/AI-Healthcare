@@ -8,6 +8,8 @@ from sklearn.cluster import KMeans
 
 from scripts.pull_data import save_processed
 
+from tqdm import tqdm
+
 
 ###### Install scispacy model with !pip install https://s3-us-west-2.amazonaws.com/ai2-s2-scispacy/releases/v0.5.0/en_core_sci_md-0.5.0.tar.gz
 
@@ -63,26 +65,34 @@ def calc_age(df):
 # Encoding diagnosis descriptions using kmeans to group similarly vectorized descriptions together.
 # Using pre-trained SciSpacy model to vectorize with Kmeans to cluster
 
-def get_embeddings(text):
+def get_embeddings(texts):
+    #nlp.pipe enables batch processing to improve efficiency
     nlp = spacy.load("en_core_sci_md")
-    doc = nlp(text)
+    docs = list(nlp.pipe(texts, disable=["parser", "tagger"]))
 
-    return doc.vector
+    return [doc.vector for doc in docs]
 
 def apply_embeddings_function(df):
-    # Gather all columns containing 'consult_diag' or ends with '_desc'
+    # Gather all columns containing 'consult_diag' or ending with '_desc'
     string_columns = [col for col in df.columns if 'consult_diag' in col or col.endswith('_desc')]
+    
+    embedding_cols = {}
 
-    embedding_cols = {
-        f'{col}_embedding': df[col].fillna('').apply(get_embeddings)
-        for col in string_columns
-    }
-    
-    # Concatenate DataFrame with the new embeddings
-    df = pd.concat([df, pd.DataFrame(embedding_cols)], axis=1)
-    
-    # Drop originals 
+    for col in string_columns:
+        print(f"Processing column: {col}")
+        
+        # tqdm shows progress
+        embeddings = get_embeddings(tqdm(df[col].fillna('').tolist(), desc=f"Embedding {col}"))
+        
+        # Store embeddings with the new column name
+        embedding_cols[f'{col}_embedding'] = embeddings
+        print(f"Completed embeddings for column: {col}")
+
+    df = pd.concat([df, pd.DataFrame(embedding_cols, index=df.index)], axis=1)
+
+    # Drop originals
     df.drop(columns=string_columns, inplace=True)
+    print("Dropped original columns after embedding.")
 
     return df
 
