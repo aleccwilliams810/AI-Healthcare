@@ -1,9 +1,12 @@
 import pandas as pd
-import os
+import numpy as np
 from scripts.pull_data import save_processed
 
 def process_admissions_data(csv_file):
     admissions_df = pd.read_csv(csv_file)
+
+     #Convert to NaN for better compatibility with LGBM
+    admissions_df = admissions_df.replace({None: np.nan})
 
     admissions_df = update_date_format(admissions_df)
     admissions_df = previous_admissions(admissions_df)

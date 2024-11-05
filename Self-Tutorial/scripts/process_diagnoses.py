@@ -1,11 +1,14 @@
 import pandas as pd
-import os
+import numpy as np
 from scripts.pull_data import save_processed
 
 num_diagnoses = 25
 
 def process_diagnosis_data(csv_file):
     diagnoses_df = pd.read_csv(csv_file)
+
+    #Convert to NaN for better compatibility with LGBM
+    diagnoses_df = diagnoses_df.replace({None: np.nan})
 
     diagnoses_df = reorder_by_diagnosis_level(diagnoses_df)
     diagnoses_df = previous_diagnoses(diagnoses_df)
@@ -39,25 +42,51 @@ def previous_diagnoses(df):
     return df
 
 def character_encoding(code_part):
+    if pd.isna(code_part):
+        return np.nan
     return ''.join(['10' if char == 'E' else '11' if char == 'V' else char for char in code_part])
 
 def engineer_first_diag_char_encoding(df):
-    # Ensure 'diag_code' is a string type
-    df['diag_code'] = df['diag_code'].astype(str)
+    # Apply character encoding to the first character of each diagnosis
+    diag_columns = [f'diag{i}' for i in range(2, num_diagnoses + 1)]
 
-    # Apply first character encoding
-    df['diag_first_char_encoded'] = df['diag_code'].str[0].apply(character_encoding)
+    new_cols = {
+        f'{col}_first_char_encoded': df[col].astype(str).str[0].apply(character_encoding)
+        for col in diag_columns
+    }
+
+    # Concatenate the original DataFrame with new features
+    df = pd.concat([df, pd.DataFrame(new_cols)], axis=1)
 
     return df
-    
+
 def engineer_first_3_diag_char_encoding(df):
-    df['diag_first_3_encoded'] = df['diag_code'].str[:3].apply(character_encoding)
+    # Apply character encoding to the first 3 characters of each diagnosis column
+    diag_columns = [f'diag{i}' for i in range(2, num_diagnoses + 1)]
+
+    # Create new columns for the first 3 characters encoding
+    new_cols = {
+        f'{col}_first_3_encoded': df[col].str[:3].apply(character_encoding)
+        for col in diag_columns
+    }
+
+    # Concatenate the original DataFrame with new columns
+    df = pd.concat([df, pd.DataFrame(new_cols)], axis=1)
 
     return df
 
 def engineer_remaining_diag_char_encoding(df):
-    df['diag_remaining_chars'] = df['diag_code'].apply(
-        lambda x: x[3:] if len(x) > 3 else ''
-    )
+    # Extract the remaining characters after the first 3 from each diagnosis column
+    diag_columns = [f'diag{i}' for i in range(2, num_diagnoses + 1)]
+
+    # Create new columns for remaining characters encoding
+    new_cols = {
+        f'{col}_remaining_chars': df[col].apply(lambda x: x[3:] if isinstance(x, str) and len(x) > 3 else (np.nan if pd.isna(x) else np.nan))
+        for col in diag_columns
+    }
+
+    # Concatenate the original DataFrame with new columns
+    df = pd.concat([df, pd.DataFrame(new_cols)], axis=1)
 
     return df
+

@@ -73,14 +73,14 @@ def load_data(client):
 
 # Functions to ensure directories exist and save data
 def save_raw(df, filename):
-    raw_path = 'Self-Tutorial/data/raw'
+    raw_path = 'data/raw'
     os.makedirs(raw_path, exist_ok=True)
     df.to_csv(os.path.join(raw_path, filename), index=False)
     print(f"Saved to {os.path.join(raw_path, filename)}")
 
 # Function to ensure directory exists and save to data/processed
 def save_processed(df, filename):
-    processed_path = 'Self-Tutorial/data/processed'
+    processed_path = 'data/processed'
     os.makedirs(processed_path, exist_ok=True)
     df.to_csv(os.path.join(processed_path, filename), index=False)
     print(f"Saved to {os.path.join(processed_path, filename)}")

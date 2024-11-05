@@ -9,11 +9,19 @@ from sklearn.cluster import KMeans
 from scripts.pull_data import save_processed
 
 
-patient_path = 'Self-Tutorial/data/processed/patients_cleaned.csv'
-admission_path = 'Self-Tutorial/data/processed/admissions_cleaned.csv'
-diagnoses_path = 'Self-Tutorial/data/processed/diagnoses_cleaned.csv'
+###### Install scispacy model with !pip install https://s3-us-west-2.amazonaws.com/ai2-s2-scispacy/releases/v0.5.0/en_core_sci_md-0.5.0.tar.gz
+
+
+patient_path = 'data/processed/patients_cleaned.csv'
+admission_path = 'data/processed/admissions_cleaned.csv'
+diagnoses_path = 'data/processed/diagnoses_cleaned.csv'
 
 def join_data():
+
+    patient_path = 'data/processed/patients_cleaned.csv'
+    admission_path = 'data/processed/admissions_cleaned.csv'
+    diagnoses_path = 'data/processed/diagnoses_cleaned.csv'
+
     # Read the cleaned data
     patients_df = pd.read_csv(patient_path)
     admissions_df = pd.read_csv(admission_path)
@@ -27,15 +35,13 @@ def join_data():
     
     return joined_df
 
-def postprocess_data():
-    df = join_data()
+def postprocess_data(df):
     df = calc_age(df)
 
     df = apply_embeddings_function(df)
     df = apply_kmeans(df)
 
     save_processed(df, 'model_inputs.csv')
-
 
 def calc_age(df):
     #First calculated in years to isolate outliers to remove. (300+ yo)
@@ -64,12 +70,18 @@ def get_embeddings(text):
     return doc.vector
 
 def apply_embeddings_function(df):
-    # Gather all columns that contain 'consult_diag' or end with '_desc'
+    # Gather all columns containing 'consult_diag' or ends with '_desc'
     string_columns = [col for col in df.columns if 'consult_diag' in col or col.endswith('_desc')]
 
-    for col in string_columns:
-        df[f'{col}_embedding'] = df[col].fillna('').apply(get_embeddings)
+    embedding_cols = {
+        f'{col}_embedding': df[col].fillna('').apply(get_embeddings)
+        for col in string_columns
+    }
     
+    # Concatenate DataFrame with the new embeddings
+    df = pd.concat([df, pd.DataFrame(embedding_cols)], axis=1)
+    
+    # Drop originals 
     df.drop(columns=string_columns, inplace=True)
 
     return df
@@ -78,13 +90,13 @@ def apply_kmeans(df):
     embedding_cols = [col for col in df.columns if '_embedding' in col]
 
     for col in embedding_cols:
-        # Get the unique count of the original column
+        # Get unique count of original column
         unique_count = df[col.replace('_embedding', '')].nunique()
 
         # Determine cluster num
         n_clusters = determine_n_clusters(unique_count)
         
-        # Prepare cluster mat
+        # Prepare cluster matrix
         embedding_matrix = np.vstack(df[col].values)
         
         # Apply KMeans
@@ -92,7 +104,7 @@ def apply_kmeans(df):
         labels = kmeans.fit_predict(embedding_matrix)
         
         # Add labels
-        df[f'{col}_cluster'] = labels
+        df = pd.concat([df, pd.DataFrame({f'{col}_cluster': labels})], axis=1)
         print(f'KMeans clustered {col} with {n_clusters} clusters.')
 
     return df

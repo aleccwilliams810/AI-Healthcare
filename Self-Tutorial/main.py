@@ -19,23 +19,20 @@ def pull():
         print("Failed to load one or more DataFrames.")
 
 def process_data():
-    patient_csv_path = 'Self-Tutorial/data/raw/patients.csv'
-    admissions_csv_path = 'Self-Tutorial/data/raw/admissions.csv'
-    diagnoses_csv_path = 'Self-Tutorial/data/raw/diagnoses.csv'
+    patient_csv_path = 'data/raw/patients.csv'
+    admissions_csv_path = 'data/raw/admissions.csv'
+    diagnoses_csv_path = 'data/raw/diagnoses.csv'
 
     process_patient_data(patient_csv_path)
     process_admissions_data(admissions_csv_path)
     process_diagnosis_data(diagnoses_csv_path)
 
     df = join_data()
-    final_inputs = postprocess_data(df)
-
-    return final_inputs
-    
+    postprocess_data(df)
 
 def main():
     pull()
-    final_inputs = process_data()
+    process_data()
 
 if __name__ == "__main__":
     main()
