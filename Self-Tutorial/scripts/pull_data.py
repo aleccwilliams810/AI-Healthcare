@@ -45,7 +45,7 @@ def load_data(client):
         subject_id,
         seq_num,
         diag.icd9_code AS diag_code,
-        long_title AS diag_code_desc
+        short_title AS diag_code_desc
     FROM `physionet-data.mimiciii_clinical.diagnoses_icd` diag
     INNER JOIN `physionet-data.mimiciii_clinical.d_icd_diagnoses` diagdesc
         ON diag.icd9_code = diagdesc.icd9_code
