@@ -63,15 +63,24 @@ def load_data(client):
     except Exception as e:
         print(f"An error occurred: {e}")
 
-    # Save DataFrames as CSV files at specified path
-    output_dir = "Self-Tutorial/data/raw"
-    patients_df.to_csv(os.path.join(output_dir, "patients.csv"), index=False)
-    print("Patients data saved to Self-Tutorial/data/raw/patients.csv")
+    save_raw(patients_df, 'patients.csv')
 
-    admissions_df.to_csv(os.path.join(output_dir, "admissions.csv"), index=False)
-    print("Admissions data saved to Self-Tutorial/data/raw/admissions.csv")
+    save_raw(admissions_df, 'admissions.csv')
 
-    diagnoses_df.to_csv(os.path.join(output_dir, "diagnoses.csv"), index=False)
-    print("Diagnoses data saved to Self-Tutorial/data/raw/diagnoses.csv")
+    save_raw(diagnoses_df, 'diagnoses.csv')
 
     return patients_df, admissions_df, diagnoses_df
+
+# Functions to ensure directories exist and save data
+def save_raw(df, filename):
+    raw_path = 'Self-Tutorial/data/raw'
+    os.makedirs(raw_path, exist_ok=True)
+    df.to_csv(os.path.join(raw_path, filename), index=False)
+    print(f"Saved to {os.path.join(raw_path, filename)}")
+
+# Function to ensure directory exists and save to data/processed
+def save_processed(df, filename):
+    processed_path = 'Self-Tutorial/data/processed'
+    os.makedirs(processed_path, exist_ok=True)
+    df.to_csv(os.path.join(processed_path, filename), index=False)
+    print(f"Saved to {os.path.join(processed_path, filename)}")

@@ -1,5 +1,6 @@
 import pandas as pd
 import os
+from scripts.pull_data import save_processed
 
 def process_admissions_data(csv_file):
     admissions_df = pd.read_csv(csv_file)
@@ -10,9 +11,7 @@ def process_admissions_data(csv_file):
     admissions_df = flatten_df(admissions_df)
     admissions_df = apply_encoding(admissions_df)
 
-    output_dir = "Self-Tutorial/data/processed"
-    admissions_df.to_csv(os.path.join(output_dir, "admissions_cleaned.csv"), index=False)
-    print("Admissions data saved to Self-Tutorial/data/processed/admissions_cleaned.csv")
+    save_processed(admissions_df, 'admissions_cleaned.csv')
     
 def update_date_format(df):
     df['admittime'] = pd.to_datetime(df['admittime'])

@@ -1,5 +1,6 @@
 import pandas as pd
 import os
+from scripts.pull_data import save_processed
 
 num_diagnoses = 25
 
@@ -11,11 +12,9 @@ def process_diagnosis_data(csv_file):
     diagnoses_df = engineer_first_diag_char_encoding(diagnoses_df)
     diagnoses_df = engineer_first_3_diag_char_encoding(diagnoses_df)
     diagnoses_df = engineer_remaining_diag_char_encoding(diagnoses_df)
-
-    output_dir = "Self-Tutorial/data/processed"
-    diagnoses_df.to_csv(os.path.join(output_dir, "diagnoses_cleaned.csv"), index=False)
-    print("Diagnoses data saved to Self-Tutorial/data/processed/diagnoses_cleaned.csv")
     
+    save_processed(diagnoses_df, 'diagnoses_cleaned.csv')
+
 def reorder_by_diagnosis_level(df):
     # Ensure seq_num sorted within each subject_id
     df.sort_values(by=['subject_id', 'seq_num'], ascending=[True, True], inplace=True)

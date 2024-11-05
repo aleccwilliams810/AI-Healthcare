@@ -6,6 +6,8 @@ import numpy as np
 
 from sklearn.cluster import KMeans
 
+from scripts.pull_data import save_processed
+
 
 patient_path = 'Self-Tutorial/data/processed/patients_cleaned.csv'
 admission_path = 'Self-Tutorial/data/processed/admissions_cleaned.csv'
@@ -32,9 +34,7 @@ def postprocess_data():
     df = apply_embeddings_function(df)
     df = apply_kmeans(df)
 
-    output_dir = "Self-Tutorial/data/processed"
-    df.to_csv(os.path.join(output_dir, "model_inputs.csv"), index=False)
-    print("Model Input saved to Self-Tutorial/data/processed/model_inputs.csv")
+    save_processed(df, 'model_inputs.csv')
 
 
 def calc_age(df):
