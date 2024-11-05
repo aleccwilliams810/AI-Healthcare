@@ -40,8 +40,8 @@ def join_data():
 def postprocess_data(df):
     df = calc_age(df)
 
-    df = apply_embeddings_function(df)
-    df = apply_kmeans(df)
+    df, embedding_df = apply_embeddings_function(df)
+    df = apply_kmeans(df, embedding_df)
 
     save_processed(df, 'model_inputs.csv')
 
@@ -90,32 +90,33 @@ def apply_embeddings_function(df):
         embedding_cols[f'{col}_embedding'] = embeddings
         print(f"Completed embeddings for column: {col}")
 
-    df = pd.concat([df, pd.DataFrame(embedding_cols, index=df.index)], axis=1)
+    # Create new DataFrame with embedding columns
+    embedding_df = pd.DataFrame(embedding_cols, index=df.index)
 
-    # Drop originals
-    df.drop(columns=string_columns, inplace=True)
-    print("Dropped original columns after embedding.")
+    # Return the new  DataFrame and the original DataFrame with columns dropped
+    return df.drop(columns=string_columns), embedding_df
 
-    return df
+def apply_kmeans(df, embedding_df):
+    embedding_cols = [col for col in embedding_df.columns]
 
-def apply_kmeans(df):
-    embedding_cols = [col for col in df.columns if '_embedding' in col]
+    cluster_labels = {}
 
     for col in embedding_cols:
 
         # Determine cluster num
-        n_clusters = determine_n_clusters(df[col].nunique())
+        n_clusters = determine_n_clusters(embedding_df[col].nunique())
         
         # Prepare cluster matrix
-        embedding_matrix = np.vstack(df[col].values)
+        embedding_matrix = np.vstack(embedding_df[col].values)
         
         # Apply KMeans
         kmeans = KMeans(n_clusters=n_clusters, random_state=42)
         labels = kmeans.fit_predict(embedding_matrix)
+
+        cluster_labels[f'{col}_cluster'] = labels
         
-        # Add labels
-        df = pd.concat([df, pd.DataFrame({f'{col}_cluster': labels})], axis=1)
-        print(f'KMeans clustered {col} with {n_clusters} clusters.')
+    # Add labels
+    df = pd.concat([df, pd.DataFrame(cluster_labels, index=df.index)], axis=1)
 
     return df
 
