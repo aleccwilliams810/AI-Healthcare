@@ -112,10 +112,10 @@ def apply_kmeans(df):
 def determine_n_clusters(unique_count):
     # More clusters for high-variance columns
     if unique_count > 5000:
-        return 150  
-    elif unique_count > 2500:
-        return 75
-    elif unique_count > 1500:
         return 50  
+    elif unique_count > 2500:
+        return 35
+    elif unique_count > 1500:
+        return 20  
     else:
-        return 25
+        return 15

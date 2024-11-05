@@ -2,7 +2,7 @@ import pandas as pd
 import numpy as np
 from scripts.pull_data import save_processed
 
-num_diagnoses = 25
+num_diagnoses = 15
 
 def process_diagnosis_data(csv_file):
     diagnoses_df = pd.read_csv(csv_file)
@@ -19,12 +19,14 @@ def process_diagnosis_data(csv_file):
     save_processed(diagnoses_df, 'diagnoses_cleaned.csv')
 
 def reorder_by_diagnosis_level(df):
-    # Ensure seq_num sorted within each subject_id
-    df.sort_values(by=['subject_id', 'seq_num'], ascending=[True, True], inplace=True)
-
-    # Reset seq_num to avoid ties
+    # Sort, reset seq_num, and count diagnoses per subject
+    df.sort_values(by=['subject_id', 'seq_num'], inplace=True)
     df['seq_num'] = df.groupby('subject_id').cumcount() + 1
+    df['diag_count'] = df['seq_num'].groupby(df['subject_id']).transform('max')
 
+    # Create and encode diagnosis count buckets
+    df['diag_count_bucket_encoded'] = pd.cut(df['diag_count'], bins=[0, 3, 5, 7, 15, np.inf], 
+                                             labels=[1, 2, 3, 4, 5], right=True).astype(int)
     return df
 
 def previous_diagnoses(df):
