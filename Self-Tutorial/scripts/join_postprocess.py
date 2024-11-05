@@ -65,12 +65,14 @@ def calc_age(df):
 # Encoding diagnosis descriptions using kmeans to group similarly vectorized descriptions together.
 # Using pre-trained SciSpacy model to vectorize with Kmeans to cluster
 
+nlp = spacy.load("en_core_sci_md")
+
 def get_embeddings(texts):
     #nlp.pipe enables batch processing to improve efficiency
-    nlp = spacy.load("en_core_sci_md")
-    docs = list(nlp.pipe(texts, disable=["parser", "tagger"]))
-
-    return [doc.vector for doc in docs]
+    embeddings = []
+    for doc_batch in nlp.pipe(texts, batch_size=1000, n_process=3, disable=["parser", "tagger"]):
+        embeddings.append(doc_batch.vector)
+    return embeddings
 
 def apply_embeddings_function(df):
     # Gather all columns containing 'consult_diag' or ending with '_desc'
