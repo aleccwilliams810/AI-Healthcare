@@ -102,11 +102,9 @@ def apply_kmeans(df):
     embedding_cols = [col for col in df.columns if '_embedding' in col]
 
     for col in embedding_cols:
-        # Get unique count of original column
-        unique_count = df[col.replace('_embedding', '')].nunique()
 
         # Determine cluster num
-        n_clusters = determine_n_clusters(unique_count)
+        n_clusters = determine_n_clusters(df[col].nunique())
         
         # Prepare cluster matrix
         embedding_matrix = np.vstack(df[col].values)
