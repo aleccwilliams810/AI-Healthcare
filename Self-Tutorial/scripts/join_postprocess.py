@@ -78,11 +78,11 @@ def apply_embeddings_function(df):
     
     embedding_cols = {}
 
-    for col in string_columns:
+    for col in tqdm(string_columns, desc=f"Embedding columns..."):
         print(f"Processing column: {col}")
         
         # tqdm shows progress
-        embeddings = get_embeddings(tqdm(df[col].fillna('').tolist(), desc=f"Embedding {col}"))
+        embeddings = get_embeddings(df[col].fillna('').tolist())
         
         # Store embeddings with the new column name
         embedding_cols[f'{col}_embedding'] = embeddings
