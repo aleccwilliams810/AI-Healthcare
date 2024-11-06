@@ -83,3 +83,14 @@ def save_processed(df, filename):
     os.makedirs(processed_path, exist_ok=True)
     df.to_csv(os.path.join(processed_path, filename), index=False)
     print(f"Saved to {os.path.join(processed_path, filename)}")
+
+def remove_temporary_files(*file_paths):
+    for file_path in file_paths:
+        try:
+            if os.path.isfile(file_path):
+                os.remove(file_path)
+                print(f"Deleted temporary file: {file_path}")
+            else:
+                print(f"File not found: {file_path}")
+        except Exception as e:
+            print(f"Error deleting file {file_path}: {e}")

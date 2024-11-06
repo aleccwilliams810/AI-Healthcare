@@ -2,10 +2,9 @@ import pandas as pd
 import numpy as np
 import spacy
 from tqdm import tqdm
-import scipy.sparse as sp
 
 from sklearn.cluster import KMeans
-from scripts.pull_data import save_processed
+from scripts.pull_data import save_processed, remove_temporary_files
 
 
 ###### Install scispacy model with !pip install https://s3-us-west-2.amazonaws.com/ai2-s2-scispacy/releases/v0.5.0/en_core_sci_md-0.5.0.tar.gz
@@ -26,13 +25,24 @@ def join_data():
     
     return merged_df
 
-def postprocess_data(df):
+def build_embeddings(df):
     df = calc_age(df)
 
     embedding_df, string_columns = apply_embeddings_function(df)
+
+    save_processed(df, 'data/processed/temp_df.csv')
+    save_processed(embedding_df, 'temp_embedding_df.csv')
+    pd.DataFrame({'string_columns': string_columns}).to_csv('temp_string_columns.csv', index=False)
+
+def kmeans_cluster_embeddings():
+    df = pd.read_csv('data/processed/temp_df.csv')
+    embedding_df = pd.read_csv('data/processed/temp_embedding_df.csv')
+    string_columns = pd.read_csv('data/processed/temp_string_columns.csv')['string_columns'].tolist()
+
     df = apply_kmeans(df, embedding_df, string_columns)
 
     save_processed(df, 'model_inputs.csv')
+    remove_temporary_files('data/processed/temp_df.csv', 'data/processed/temp_embedding_df.csv', 'data/processed/temp_string_columns.csv')
 
 def calc_age(df):
     #First calculated in years to isolate outliers to remove. (300+ yo) 
@@ -57,29 +67,29 @@ def calc_age(df):
 
 def get_embeddings(texts):
     #nlp.pipe enables batch processing to improve efficiency
-    return np.array([doc.vector for doc in nlp.pipe(texts, batch_size=1000, n_process=4, disable=["parser", "tagger"])])
+    embeddings = []
+    for doc_batch in nlp.pipe(texts, batch_size=1000, n_process=4, disable=["parser", "tagger"]):
+        embeddings.append(doc_batch.vector)
+    return embeddings
 
 def apply_embeddings_function(df):
     # Gather all columns containing 'consult_diag' or ending with '_desc'
     string_columns = [col for col in df.columns if 'consult_diag' in col or col.endswith('_desc')]
     
-    all_embeddings = []
-    embedding_cols = []
+    embedding_cols = {}
 
-    # tqdm shows progress
-    for col in tqdm(string_columns, desc='Embedding columns'):
+    for col in string_columns:
         print(f"Processing column: {col}")
         
-        embeddings = get_embeddings(df[col].fillna('').tolist())
-
-        #sp.csr_matrix improves efficiency storing embeddings without altering index structure
-        all_embeddings.append(sp.csr_matrix(embeddings))
-        embedding_cols.extend([f"{col}_embedding_{i}" for i in range(embeddings.shape[1])])
+        # tqdm shows progress
+        embeddings = get_embeddings(tqdm(df[col].fillna('').tolist(), desc=f"Embedding {col}"))
         
-    all_embeddings_sparse = sp.hstack(all_embeddings, format="csr")
+        # Store embeddings with the new column name
+        embedding_cols[f'{col}_embedding'] = embeddings
+        print(f"Completed embeddings for column: {col}")
 
     # Create new DataFrame with embedding columns
-    embedding_df = pd.DataFrame(all_embeddings_sparse.toarray(), index=df.index, columns=embedding_cols)
+    embedding_df = pd.DataFrame(embedding_cols, index=df.index)
 
     # Return the new  DataFrame and the original DataFrame with columns dropped
     return embedding_df, df[string_columns]
