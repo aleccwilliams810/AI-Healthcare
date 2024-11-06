@@ -1,6 +1,5 @@
 import pandas as pd
 import lightgbm as lgb
-from tqdm import tqdm
 import matplotlib.pyplot as plt
 import seaborn as sns
 
@@ -12,7 +11,7 @@ from sklearn.metrics import (
 def load_data(data_path):
     df = pd.read_csv(data_path)
     
-    # Attempt to convert all columns to numeric, coercing errors to NaN
+    # Attempt to convert all columns to numeric for model
     try:
         df = df.apply(pd.to_numeric, errors='coerce')
     except Exception as e:
@@ -33,67 +32,55 @@ def train_model(X_train, y_train, param_grid):
         scoring='roc_auc',
         cv=3,
         random_state=42,
-        n_jobs=-1
+        n_jobs=-1,
+        verbose=2
     )
 
     print("Training model with RandomizedSearchCV...")
 
-    with tqdm(total=50, desc="Model training progress") as pbar:
-        def fit_with_progress(*args, **kwargs):
-            pbar.update(1) 
-            return random_search._fit_and_score(*args, **kwargs)
-
-        random_search._fit_and_score = fit_with_progress
-
-        random_search.fit(
-            X_train_sub, y_train_sub,
-            eval_set=[(X_val, y_val)],
-            early_stopping_rounds=10,
-            eval_metric='auc',
-            verbose=True
-        )
+    random_search.fit(
+        X_train_sub, y_train_sub,
+        eval_set=[(X_val, y_val)],
+        early_stopping_rounds=10,
+        eval_metric='auc',
+        verbose=True
+    )
 
     return random_search
 
-def save_results(y_test, y_pred, y_pred_proba):
+def display_metrics(y_test, y_pred, y_pred_proba):
+    metrics = {
+        'Accuracy': accuracy_score(y_test, y_pred),
+        'ROC AUC Score': roc_auc_score(y_test, y_pred_proba),
+        'Precision': precision_score(y_test, y_pred),
+        'Recall': recall_score(y_test, y_pred),
+        'F1 Score': f1_score(y_test, y_pred)
+    }
+    metrics_df = pd.DataFrame(list(metrics.items()), columns=['Metric', 'Value'])
+    print("\nModel Performance Metrics:")
+    print(metrics_df)
+    return metrics_df
+
+def save_results(y_test, y_pred, y_pred_proba, metrics_df):
     # DataFrame for predictions
     results_df = pd.DataFrame({
         'Actual': y_test,
         'Predicted_Probabilities': y_pred_proba,
         'Predicted_Labels': y_pred
     })
+
     results_df.to_csv('models/model_results.csv', index=False)
-
-    # DataFrame for metrics
-    metrics_df = pd.DataFrame({
-        'Metric': ['Accuracy', 'ROC_AUC_Score', 'Precision', 'Recall', 'F1 Score'],
-        'Value': [
-            accuracy_score(y_test, y_pred),
-            roc_auc_score(y_test, y_pred_proba),
-            precision_score(y_test, y_pred),
-            recall_score(y_test, y_pred),
-            f1_score(y_test, y_pred)
-        ]
-    })
     metrics_df.to_csv('models/model_metrics.csv', index=False)
-
-    # print metrics
-    print("\nModel Performance Metrics:")
-    print(metrics_df)
 
 def display_best_params(random_search):
     best_params = random_search.best_params_
     best_score = random_search.best_score_
-    params_df = pd.DataFrame([best_params], columns=best_params.keys())
-    params_df['Best ROC AUC Score'] = best_score
     print("\nBest Model Parameters and Score:")
-    print(params_df)
+    print(pd.DataFrame([{**best_params, 'Best ROC AUC Score': best_score}]))
 
 def display_classification_report(y_test, y_pred):
-    print("Classification Report:")
-    print(classification_report(y_test, y_pred))
-    print("\nConfusion Matrix:")
-    print(confusion_matrix(y_test, y_pred))
+    print("Classification Report:\n", classification_report(y_test, y_pred))
+    print("\nConfusion Matrix:\n", confusion_matrix(y_test, y_pred))
 
 def plot_roc_curve(y_test, y_pred_proba):
     fpr, tpr, _ = roc_curve(y_test, y_pred_proba)
@@ -103,7 +90,6 @@ def plot_roc_curve(y_test, y_pred_proba):
     plt.title("ROC Curve")
     plt.legend(loc="best")
     plt.show()
-
 
 def plot_confusion_matrix(y_test, y_pred):
     cm = confusion_matrix(y_test, y_pred)
@@ -137,9 +123,10 @@ def main():
     y_pred = best_model.predict(X_test)
     y_pred_proba = best_model.predict_proba(X_test)[:, 1]
 
-    save_results(y_test, y_pred, y_pred_proba)
+    metrics_df = display_metrics(y_test, y_pred, y_pred_proba)
+    save_results(y_test, y_pred, y_pred_proba, metrics_df)
+    
     display_best_params(random_search)
-
     display_classification_report(y_test, y_pred)
     plot_roc_curve(y_test, y_pred_proba)
     plot_confusion_matrix(y_test, y_pred_proba)
