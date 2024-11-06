@@ -32,12 +32,12 @@ def build_embeddings(df):
 
     save_processed(df, 'temp_df.csv')
     embedding_df.to_parquet('data/processed/temp_embedding_df.parquet')
-    pd.DataFrame({'string_columns': string_columns}).to_csv('temp_string_columns.csv')
+    save_processed('temp_string_columns.csv')
 
 def kmeans_cluster_embeddings():
     df = pd.read_csv('data/processed/temp_df.csv')
     embedding_df = pd.read_parquet('data/processed/temp_embedding_df.parquet')
-    string_columns = pd.read_csv('data/processed/temp_string_columns.csv')['string_columns'].tolist()
+    string_columns = pd.read_csv('data/processed/temp_string_columns.csv')
 
     df = apply_kmeans(df, embedding_df, string_columns)
 
