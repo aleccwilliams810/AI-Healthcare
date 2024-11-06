@@ -1,14 +1,10 @@
 import pandas as pd
-import os
-
-import spacy
 import numpy as np
+import spacy
+from tqdm import tqdm
 
 from sklearn.cluster import KMeans
-
 from scripts.pull_data import save_processed
-
-from tqdm import tqdm
 
 
 ###### Install scispacy model with !pip install https://s3-us-west-2.amazonaws.com/ai2-s2-scispacy/releases/v0.5.0/en_core_sci_md-0.5.0.tar.gz

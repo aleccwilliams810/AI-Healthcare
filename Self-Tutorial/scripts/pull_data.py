@@ -1,7 +1,6 @@
 import os
 from google.colab import auth
 from google.cloud import bigquery
-import pandas as pd
 
 ##### Adjust the code where indicated to match your credentials
 

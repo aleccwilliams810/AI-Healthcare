@@ -1,9 +1,13 @@
-import lightgbm as lgb
-from sklearn.model_selection import train_test_split, RandomizedSearchCV
-from sklearn.metrics import roc_auc_score, accuracy_score, precision_score, recall_score, f1_score, confusion_matrix
 import pandas as pd
-import csv
+import lightgbm as lgb
 from tqdm import tqdm
+import matplotlib.pyplot as plt
+import seaborn as sns
+
+from sklearn.model_selection import train_test_split, RandomizedSearchCV
+from sklearn.metrics import (
+    roc_auc_score, accuracy_score, precision_score, recall_score, f1_score, classification_report, confusion_matrix, roc_curve
+)
 
 def load_data(data_path):
     df = pd.read_csv(data_path)
@@ -17,6 +21,9 @@ def load_data(data_path):
     return df
 
 def train_model(X_train, y_train, param_grid):
+
+    X_train_sub, X_val, y_train_sub, y_val = train_test_split(X_train, y_train, test_size=0.2, random_state=42)
+
     model = lgb.LGBMClassifier(class_weight='balanced', random_state=42)
 
     random_search = RandomizedSearchCV(
@@ -37,11 +44,19 @@ def train_model(X_train, y_train, param_grid):
             return random_search._fit_and_score(*args, **kwargs)
 
         random_search._fit_and_score = fit_with_progress
-        random_search.fit(X_train, y_train)
+
+        random_search.fit(
+            X_train_sub, y_train_sub,
+            eval_set=[(X_val, y_val)],
+            early_stopping_rounds=10,
+            eval_metric='auc',
+            verbose=True
+        )
 
     return random_search
 
 def save_results(y_test, y_pred, y_pred_proba):
+    # DataFrame for predictions
     results_df = pd.DataFrame({
         'Actual': y_test,
         'Predicted_Probabilities': y_pred_proba,
@@ -49,19 +64,55 @@ def save_results(y_test, y_pred, y_pred_proba):
     })
     results_df.to_csv('models/model_results.csv', index=False)
 
-    metrics = {
-        'Accuracy': accuracy_score(y_test, y_pred),
-        'ROC_AUC_Score': roc_auc_score(y_test, y_pred_proba),
-        'Precision': precision_score(y_test, y_pred),
-        'Recall': recall_score(y_test, y_pred),
-        'F1 Score': f1_score(y_test, y_pred)
-    }
+    # DataFrame for metrics
+    metrics_df = pd.DataFrame({
+        'Metric': ['Accuracy', 'ROC_AUC_Score', 'Precision', 'Recall', 'F1 Score'],
+        'Value': [
+            accuracy_score(y_test, y_pred),
+            roc_auc_score(y_test, y_pred_proba),
+            precision_score(y_test, y_pred),
+            recall_score(y_test, y_pred),
+            f1_score(y_test, y_pred)
+        ]
+    })
+    metrics_df.to_csv('models/model_metrics.csv', index=False)
 
-    with open('model_metrics.csv', mode='w', newline='') as file:
-        writer = csv.writer(file)
-        writer.writerow(['Metric', 'Value'])
-        for key, value in metrics.items():
-            writer.writerow([key, value])
+    # print metrics
+    print("\nModel Performance Metrics:")
+    print(metrics_df)
+
+def display_best_params(random_search):
+    best_params = random_search.best_params_
+    best_score = random_search.best_score_
+    params_df = pd.DataFrame([best_params], columns=best_params.keys())
+    params_df['Best ROC AUC Score'] = best_score
+    print("\nBest Model Parameters and Score:")
+    print(params_df)
+
+def display_classification_report(y_test, y_pred):
+    print("Classification Report:")
+    print(classification_report(y_test, y_pred))
+    print("\nConfusion Matrix:")
+    print(confusion_matrix(y_test, y_pred))
+
+def plot_roc_curve(y_test, y_pred_proba):
+    fpr, tpr, _ = roc_curve(y_test, y_pred_proba)
+    plt.plot(fpr, tpr, label="ROC Curve")
+    plt.xlabel("False Positive Rate")
+    plt.ylabel("True Positive Rate")
+    plt.title("ROC Curve")
+    plt.legend(loc="best")
+    plt.show()
+
+
+def plot_confusion_matrix(y_test, y_pred):
+    cm = confusion_matrix(y_test, y_pred)
+    plt.figure(figsize=(6, 4))
+    sns.heatmap(cm, annot=True, fmt='d', cmap='Blues')
+    plt.xlabel("Predicted")
+    plt.ylabel("Actual")
+    plt.title("Confusion Matrix")
+    plt.show()
 
 def main():
     data_path = 'data/processed/model_inputs.csv'
@@ -87,6 +138,11 @@ def main():
     y_pred_proba = best_model.predict_proba(X_test)[:, 1]
 
     save_results(y_test, y_pred, y_pred_proba)
+    display_best_params(random_search)
+
+    display_classification_report(y_test, y_pred)
+    plot_roc_curve(y_test, y_pred_proba)
+    plot_confusion_matrix(y_test, y_pred_proba)
 
 if __name__ == "__main__":
     main()
