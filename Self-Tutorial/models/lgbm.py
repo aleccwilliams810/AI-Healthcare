@@ -109,8 +109,8 @@ def main():
     X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
 
     param_grid = {
-        'num_leaves': [21, 31, 41],
-        'max_depth': [-1, 10, 20],
+        'num_leaves': [20, 40, 60],
+        'max_depth': [-1, 15, 30],
         'learning_rate': [0.01, 0.05, 0.1, 0.2],
         'n_estimators': [100, 200, 400],
         'min_child_samples': [20, 50, 100],
