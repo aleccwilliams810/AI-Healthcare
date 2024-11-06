@@ -110,7 +110,7 @@ def main():
 
     param_grid = {
         'num_leaves': [20, 40, 60],
-        'max_depth': [-1, 15, 30],
+        'max_depth': [10, 20, 40],
         'learning_rate': [0.01, 0.05, 0.1, 0.2],
         'n_estimators': [100, 200, 400],
         'min_child_samples': [20, 50, 100],

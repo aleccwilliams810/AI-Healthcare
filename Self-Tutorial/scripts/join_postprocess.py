@@ -30,19 +30,19 @@ def build_embeddings(df):
 
     embedding_df, string_columns = apply_embeddings_function(df)
 
-    save_processed(df, 'data/processed/temp_df.csv')
-    save_processed(embedding_df, 'temp_embedding_df.csv')
-    pd.DataFrame({'string_columns': string_columns}).to_csv('temp_string_columns.csv', index=False)
+    save_processed(df, 'temp_df.csv')
+    embedding_df.to_parquet('data/processed/temp_embedding_df.parquet')
+    pd.DataFrame({'string_columns': string_columns}).to_csv('temp_string_columns.csv')
 
 def kmeans_cluster_embeddings():
     df = pd.read_csv('data/processed/temp_df.csv')
-    embedding_df = pd.read_csv('data/processed/temp_embedding_df.csv')
+    embedding_df = pd.read_parquet('data/processed/temp_embedding_df.parquet')
     string_columns = pd.read_csv('data/processed/temp_string_columns.csv')['string_columns'].tolist()
 
     df = apply_kmeans(df, embedding_df, string_columns)
 
     save_processed(df, 'model_inputs.csv')
-    remove_temporary_files('data/processed/temp_df.csv', 'data/processed/temp_embedding_df.csv', 'data/processed/temp_string_columns.csv')
+    remove_temporary_files('data/processed/temp_df.csv', 'data/processed/temp_embedding_df.parquet', 'data/processed/temp_string_columns.csv')
 
 def calc_age(df):
     #First calculated in years to isolate outliers to remove. (300+ yo) 
@@ -79,7 +79,7 @@ def apply_embeddings_function(df):
     embedding_cols = {}
 
     for col in tqdm(string_columns, desc=f"Embedding columns..."):
-        print(f"Processing column: {col}")
+        print(f"\nProcessing column: {col}")
         
         # tqdm shows progress
         embeddings = get_embeddings(df[col].fillna('').tolist())
