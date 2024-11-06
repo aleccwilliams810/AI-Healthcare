@@ -2,6 +2,7 @@ import pandas as pd
 import numpy as np
 import spacy
 from tqdm import tqdm
+import scipy.sparse as sp
 
 from sklearn.cluster import KMeans
 from scripts.pull_data import save_processed
@@ -65,19 +66,20 @@ def apply_embeddings_function(df):
     all_embeddings = []
     embedding_cols = []
 
-    for col in string_columns:
+    # tqdm shows progress
+    for col in tqdm(string_columns, desc='Embedding columns'):
         print(f"Processing column: {col}")
         
-        # tqdm shows progress
-        embeddings = get_embeddings(tqdm(df[col].fillna('').tolist(), desc=f"Embedding {col}"))
+        embeddings = get_embeddings(df[col].fillna('').tolist())
 
-        all_embeddings.append(embeddings)
+        #sp.csr_matrix improves efficiency storing embeddings without altering index structure
+        all_embeddings.append(sp.csr_matrix(embeddings))
         embedding_cols.extend([f"{col}_embedding_{i}" for i in range(embeddings.shape[1])])
         
-    all_embeddings = np.hstack(all_embeddings)
+    all_embeddings_sparse = sp.hstack(all_embeddings, format="csr")
 
     # Create new DataFrame with embedding columns
-    embedding_df = pd.DataFrame(all_embeddings, index=df.index, columns=embedding_cols)
+    embedding_df = pd.DataFrame(all_embeddings_sparse.toarray(), index=df.index, columns=embedding_cols)
 
     # Return the new  DataFrame and the original DataFrame with columns dropped
     return embedding_df, df[string_columns]
