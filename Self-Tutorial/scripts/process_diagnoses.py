@@ -53,7 +53,7 @@ def character_encoding(code_part):
         else char for char in code_part])
 
     if encoded_str.isdigit():
-        return int(encoded_str)
+        return float(encoded_str)
     else:
         return np.nan
 

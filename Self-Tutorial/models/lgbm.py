@@ -3,12 +3,22 @@ from sklearn.model_selection import train_test_split, RandomizedSearchCV
 from sklearn.metrics import roc_auc_score, accuracy_score, precision_score, recall_score, f1_score, confusion_matrix
 import pandas as pd
 import csv
+from tqdm import tqdm
 
 def load_data(data_path):
-    return pd.read_csv(data_path)
+    df = pd.read_csv(data_path)
+    
+    # Attempt to convert all columns to numeric, coercing errors to NaN
+    try:
+        df = df.apply(pd.to_numeric, errors='coerce')
+    except Exception as e:
+        print("Error converting columns to numeric:", e)
+    
+    return df
 
 def train_model(X_train, y_train, param_grid):
     model = lgb.LGBMClassifier(class_weight='balanced', random_state=42)
+
     random_search = RandomizedSearchCV(
         estimator=model,
         param_distributions=param_grid,
@@ -18,7 +28,17 @@ def train_model(X_train, y_train, param_grid):
         random_state=42,
         n_jobs=-1
     )
-    random_search.fit(X_train, y_train)
+
+    print("Training model with RandomizedSearchCV...")
+
+    with tqdm(total=50, desc="Model training progress") as pbar:
+        def fit_with_progress(*args, **kwargs):
+            pbar.update(1) 
+            return random_search._fit_and_score(*args, **kwargs)
+
+        random_search._fit_and_score = fit_with_progress
+        random_search.fit(X_train, y_train)
+
     return random_search
 
 def save_results(y_test, y_pred, y_pred_proba):
