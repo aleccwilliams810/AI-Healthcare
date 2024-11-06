@@ -46,14 +46,25 @@ def previous_diagnoses(df):
 def character_encoding(code_part):
     if pd.isna(code_part):
         return np.nan
-    return ''.join(['10' if char == 'E' else '11' if char == 'V' else char for char in code_part])
+    encoded_str = ''.join([
+        '10' if char == 'E' 
+        else '11' if char == 'V' 
+        else '' if char == 'n'
+        else char for char in code_part])
+
+    if encoded_str.isdigit():
+        return int(encoded_str)
+    else:
+        return np.nan
 
 def engineer_first_diag_char_encoding(df):
     # Apply character encoding to the first character of each diagnosis
     diag_columns = [f'diag{i}' for i in range(2, num_diagnoses + 1)]
 
     new_cols = {
-        f'{col}_first_char_encoded': df[col].astype(str).str[0].apply(character_encoding)
+        f'{col}_first_char_encoded': pd.to_numeric(
+            df[col].astype(str).str[0].apply(character_encoding), errors='coerce'
+        )
         for col in diag_columns
     }
 
@@ -68,7 +79,9 @@ def engineer_first_3_diag_char_encoding(df):
 
     # Create new columns for the first 3 characters encoding
     new_cols = {
-        f'{col}_first_3_encoded': df[col].str[:3].apply(character_encoding)
+        f'{col}_first_3_encoded': pd.to_numeric(
+            df[col].str[:3].apply(character_encoding), errors='coerce'
+        )
         for col in diag_columns
     }
 
@@ -83,7 +96,9 @@ def engineer_remaining_diag_char_encoding(df):
 
     # Create new columns for remaining characters encoding
     new_cols = {
-        f'{col}_remaining_chars': df[col].apply(lambda x: x[3:] if isinstance(x, str) and len(x) > 3 else (np.nan if pd.isna(x) else np.nan))
+        f'{col}_remaining_chars': pd.to_numeric(
+            df[col].apply(lambda x: x[3:] if isinstance(x, str) and len(x) > 3 else (np.nan if pd.isna(x) else np.nan)), errors='coerce'
+        )
         for col in diag_columns
     }
 

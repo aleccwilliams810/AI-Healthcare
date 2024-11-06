@@ -44,7 +44,7 @@ def save_results(y_test, y_pred, y_pred_proba):
             writer.writerow([key, value])
 
 def main():
-    data_path = 'Self-Tutorial/data/processed/model_inputs.csv'
+    data_path = 'data/processed/model_inputs.csv'
     df = load_data(data_path)
 
     X = df.drop(columns=['hospital_expire_flag'])
