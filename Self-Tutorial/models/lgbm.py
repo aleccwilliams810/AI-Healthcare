@@ -2,6 +2,8 @@ import pandas as pd
 import lightgbm as lgb
 import matplotlib.pyplot as plt
 import seaborn as sns
+import numpy as np
+import json
 
 from sklearn.model_selection import train_test_split, RandomizedSearchCV
 from sklearn.metrics import (
@@ -109,6 +111,46 @@ def plot_confusion_matrix(y_test, y_pred):
     plt.title("Confusion Matrix")
     plt.show()
 
+def cross_validate(X_train, y_train, param_grid):
+    X_train_sub, X_val, y_train_sub, y_val = train_test_split(X_train, y_train, test_size=0.2, random_state=42)
+
+    model = lgb.LGBMClassifier(class_weight='balanced', random_state=42)
+
+    random_search = RandomizedSearchCV(
+        estimator=model,
+        param_distributions=param_grid,
+        n_iter=20,
+        scoring='roc_auc',
+        cv=3,
+        random_state=42,
+        n_jobs=-1,
+        verbose=2
+    )
+
+    print("Training model with RandomizedSearchCV...")
+
+    random_search.fit(X_train_sub, y_train_sub)
+
+    best_params = random_search.best_params_
+
+    d_train = lgb.Dataset(X_train, label=y_train)
+    d_val = lgb.Dataset(X_val, label=y_val, reference=d_train)
+
+    return best_params, d_train, d_val
+
+def train_model_test(best_params, d_train, d_val):
+    best_model = lgb.train(
+        best_params,
+        d_train,
+        valid_sets=[d_val],
+        callbacks=[
+            lgb.early_stopping(stopping_rounds=10, verbose=True),
+            lgb.log_evaluation(period=1)
+        ]
+    )
+
+    return best_model
+
 def main():
     data_path = 'data/processed/model_inputs.csv'
     df = load_data(data_path)
@@ -128,16 +170,16 @@ def main():
     }
 
     best_model = train_model(X_train, y_train, param_grid)
-    y_pred = best_model.predict(X_test)
-    y_pred_proba = best_model.predict_proba(X_test)[:, 1]
+    y_pred_prob = best_model.predict(X_test)
+    y_pred = (y_pred_prob > 0.5).astype(float)
 
-    metrics_df = display_metrics(y_test, y_pred, y_pred_proba)
-    save_results(y_test, y_pred, y_pred_proba, metrics_df)
+    metrics_df = display_metrics(y_test, y_pred, y_pred_prob)
+    save_results(y_test, y_pred, y_pred_prob, metrics_df)
     
     display_best_params(best_model)
     display_classification_report(y_test, y_pred)
-    plot_roc_curve(y_test, y_pred_proba)
-    plot_confusion_matrix(y_test, y_pred_proba)
+    plot_roc_curve(y_test, y_pred_prob)
+    plot_confusion_matrix(y_test, y_pred_prob)
 
 if __name__ == "__main__":
     main()
