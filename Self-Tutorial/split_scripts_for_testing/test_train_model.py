@@ -3,7 +3,6 @@ import sys
 # Add the path to the directory containing the 'Self-Tutorial' folder
 sys.path.append('/content/AI-Healthcare/Self-Tutorial')
 
-import numpy as np
 import pandas as pd
 import lightgbm as lgb
 from models.lgbm import train_model_test, display_metrics, save_results, display_best_params, display_classification_report, plot_roc_curve, plot_confusion_matrix

@@ -53,7 +53,7 @@ def train_model(X_train, y_train, param_grid):
         d_train,
         valid_sets=[d_val],
         callbacks=[
-            lgb.early_stopping(stopping_rounds=10, verbose=True),
+            lgb.early_stopping(stopping_rounds=20, verbose=True),
             lgb.log_evaluation(period=1)
         ]
     )
@@ -144,7 +144,7 @@ def train_model_test(best_params, d_train, d_val):
         d_train,
         valid_sets=[d_val],
         callbacks=[
-            lgb.early_stopping(stopping_rounds=10, verbose=True),
+            lgb.early_stopping(stopping_rounds=20, verbose=True),
             lgb.log_evaluation(period=1)
         ]
     )
