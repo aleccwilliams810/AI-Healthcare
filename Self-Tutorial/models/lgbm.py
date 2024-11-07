@@ -45,12 +45,14 @@ def train_model(X_train, y_train, param_grid):
     d_train = lgb.Dataset(X_train, label=y_train)
     d_val = lgb.Dataset(X_val, label=y_val, reference=d_train)
 
-    #training best model
+    early_stopping_callback = lgb.early_stopping(stopping_rounds=10, verbose=True)
+
+    # Train the best model with early stopping callback
     best_model = lgb.train(
         best_params,
         d_train,
         valid_sets=[d_val],
-        early_stopping_rounds=12,
+        callbacks=[early_stopping_callback],
         verbose_eval=True
     )
 
@@ -117,8 +119,8 @@ def main():
 
     param_grid = {
         'num_leaves': [20, 40, 60],
-        'max_depth': [-1, 5, 10, 20],
-        'learning_rate': [0.01, 0.05, 0.1, 0.2],
+        'max_depth': [5, 15, 30],
+        'learning_rate': [0.01, 0.05, 0.1],
         'n_estimators': [50, 100, 200],
         'min_child_samples': [25, 50, 100],
         'subsample': [0.6, 0.8, 1.0],
