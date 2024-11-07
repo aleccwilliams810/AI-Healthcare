@@ -32,7 +32,7 @@ def build_embeddings(df):
 
     save_processed(df, 'temp_df.csv')
     embedding_df.to_parquet('data/processed/temp_embedding_df.parquet')
-    save_processed('temp_string_columns.csv')
+    save_processed(string_columns, 'temp_string_columns.csv')
 
 def kmeans_cluster_embeddings():
     df = pd.read_csv('data/processed/temp_df.csv')
@@ -42,7 +42,6 @@ def kmeans_cluster_embeddings():
     df = apply_kmeans(df, embedding_df, string_columns)
 
     save_processed(df, 'model_inputs.csv')
-    remove_temporary_files('data/processed/temp_df.csv', 'data/processed/temp_embedding_df.parquet', 'data/processed/temp_string_columns.csv')
 
 def calc_age(df):
     #First calculated in years to isolate outliers to remove. (300+ yo) 
@@ -101,7 +100,7 @@ def apply_kmeans(df, embedding_df, original_string_df):
 
     cluster_labels = {}
 
-    for i, col in enumerate(embedding_cols):
+    for i, col in tqdm(enumerate(embedding_cols), desc=f"Clustering embeddings..."):
 
         # Determine cluster num using original column pre-emeddings
         original_col = original_string_df.columns[i]
@@ -118,7 +117,7 @@ def apply_kmeans(df, embedding_df, original_string_df):
     # Add labels
     df = pd.concat([df, pd.DataFrame(cluster_labels, index=df.index)], axis=1)
 
-    return df.drop(columns=original_string_df.columns, inplace=True)
+    return df.drop(columns=original_string_df.columns)
 
 def determine_n_clusters(unique_count):
     # More clusters for high-variance columns
