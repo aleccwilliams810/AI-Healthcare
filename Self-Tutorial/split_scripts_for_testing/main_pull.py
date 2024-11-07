@@ -1,6 +1,6 @@
 ########## Run script to pull raw data
  
-from scripts.pull_data import authenticate_and_initialize_client, load_data
+from Self-Tutorial.scripts.pull_data import authenticate_and_initialize_client, load_data
 
 def pull():
     # Authenticate and initialize the BigQuery client
