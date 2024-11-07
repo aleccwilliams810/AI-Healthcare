@@ -38,7 +38,11 @@ def train_model(X_train, y_train, param_grid):
 
     print("Training model with RandomizedSearchCV...")
 
-    random_search.fit(
+    random_search.fit(X_train_sub, y_train_sub)
+
+    best_model = random_search.best_estimator_
+
+    best_model.fit(
         X_train_sub, y_train_sub,
         eval_set=[(X_val, y_val)],
         early_stopping_rounds=7,
@@ -46,7 +50,7 @@ def train_model(X_train, y_train, param_grid):
         verbose=True
     )
 
-    return random_search
+    return best_model
 
 def display_metrics(y_test, y_pred, y_pred_proba):
     metrics = {
@@ -72,11 +76,10 @@ def save_results(y_test, y_pred, y_pred_proba, metrics_df):
     results_df.to_csv('models/model_results.csv', index=False)
     metrics_df.to_csv('models/model_metrics.csv', index=False)
 
-def display_best_params(random_search):
-    best_params = random_search.best_params_
-    best_score = random_search.best_score_
+def display_best_params(best_model):
+    best_params = best_model.get_params()
     print("\nBest Model Parameters and Score:")
-    print(pd.DataFrame([{**best_params, 'Best ROC AUC Score': best_score}]))
+    print(pd.DataFrame([best_params]))
 
 def display_classification_report(y_test, y_pred):
     print("Classification Report:\n", classification_report(y_test, y_pred))
@@ -118,15 +121,14 @@ def main():
         'colsample_bytree': [0.6, 0.8, 1.0]
     }
 
-    random_search = train_model(X_train, y_train, param_grid)
-    best_model = random_search.best_estimator_
+    best_model = train_model(X_train, y_train, param_grid)
     y_pred = best_model.predict(X_test)
     y_pred_proba = best_model.predict_proba(X_test)[:, 1]
 
     metrics_df = display_metrics(y_test, y_pred, y_pred_proba)
     save_results(y_test, y_pred, y_pred_proba, metrics_df)
     
-    display_best_params(random_search)
+    display_best_params(best_model)
     display_classification_report(y_test, y_pred)
     plot_roc_curve(y_test, y_pred_proba)
     plot_confusion_matrix(y_test, y_pred_proba)

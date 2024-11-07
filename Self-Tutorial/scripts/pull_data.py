@@ -4,15 +4,10 @@ from google.cloud import bigquery
 
 ##### Adjust the code where indicated to match your credentials
 
-## def authenticate_and_initialize_client(project_id="your_project_id"):
-##     """Authenticate the user and initialize the BigQuery client."""
-##     auth.authenticate_user()
-##     client = bigquery.Client(project="your_project_id")
-##     return client
-def authenticate_and_initialize_client(project_id="careful-broker-438616-s1"):
+def authenticate_and_initialize_client(project_id="your_project_id"): ####### Adjust your_project_id
     """Authenticate the user and initialize the BigQuery client."""
     auth.authenticate_user()
-    client = bigquery.Client(project="careful-broker-438616-s1")
+    client = bigquery.Client(project="your_project_id") ####### Adjust your_project_id
     return client
 
 def load_data(client):
