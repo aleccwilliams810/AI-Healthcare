@@ -38,17 +38,6 @@ def train_model(X_train, y_train, param_grid):
 
     print("Training model with RandomizedSearchCV...")
 
-    def fit_with_early_stopping(*args, **kwargs):
-        kwargs.update({
-            'eval_set': [(X_val, y_val)],
-            'early_stopping_rounds': 7,
-            'eval_metric': 'auc',
-            'verbose': True
-        })
-        return original_fit_and_score(*args, **kwargs)
-    
-    original_fit_and_score = random_search._fit_and_score
-    random_search._fit_and_score = fit_with_early_stopping
     random_search.fit(X_train_sub, y_train_sub)
 
     best_params = random_search.best_params_
@@ -128,10 +117,10 @@ def main():
 
     param_grid = {
         'num_leaves': [20, 40, 60],
-        'max_depth': [10, 20, 40],
+        'max_depth': [-1, 5, 10, 20],
         'learning_rate': [0.01, 0.05, 0.1, 0.2],
-        'n_estimators': [50, 125, 250, 500],
-        'min_child_samples': [20, 50, 100],
+        'n_estimators': [50, 100, 200],
+        'min_child_samples': [25, 50, 100],
         'subsample': [0.6, 0.8, 1.0],
         'colsample_bytree': [0.6, 0.8, 1.0]
     }
