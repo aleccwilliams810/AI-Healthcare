@@ -30,7 +30,7 @@ def train_model(X_train, y_train, param_grid):
     random_search = RandomizedSearchCV(
         estimator=model,
         param_distributions=param_grid,
-        n_iter=20,
+        n_iter=25,
         scoring='roc_auc',
         cv=3,
         random_state=42,
@@ -119,7 +119,7 @@ def cross_validate(X_train, y_train, param_grid):
     random_search = RandomizedSearchCV(
         estimator=model,
         param_distributions=param_grid,
-        n_iter=20,
+        n_iter=25,
         scoring='roc_auc',
         cv=3,
         random_state=42,
@@ -164,7 +164,7 @@ def main():
         'max_depth': [5, 15, 30],
         'learning_rate': [0.01, 0.05, 0.1],
         'n_estimators': [50, 100, 200],
-        'min_child_samples': [25, 50, 100],
+        'min_child_samples': [25, 50, 100, 200],
         'subsample': [0.6, 0.8, 1.0],
         'colsample_bytree': [0.6, 0.8, 1.0]
     }

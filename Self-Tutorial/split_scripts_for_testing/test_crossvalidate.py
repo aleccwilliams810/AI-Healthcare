@@ -22,7 +22,7 @@ def main():
         'max_depth': [5, 15, 45],
         'learning_rate': [0.01, 0.05, 0.1],
         'n_estimators': [50, 100, 200],
-        'min_child_samples': [25, 50, 100],
+        'min_child_samples': [25, 50, 100, 200],
         'subsample': [0.6, 0.8, 1.0],
         'colsample_bytree': [0.6, 0.8, 1.0]
     }
