@@ -160,11 +160,11 @@ def main():
     X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
 
     param_grid = {
-        'num_leaves': [20, 40, 80],
-        'max_depth': [5, 15, 30],
+        'num_leaves': [20, 50, 100],
+        'max_depth': [5, 15, 45],
         'learning_rate': [0.01, 0.05, 0.1],
-        'n_estimators': [50, 100, 200],
-        'min_child_samples': [25, 50, 100, 200],
+        'n_estimators': [50, 150, 300],
+        'min_child_samples': [25, 75, 150],
         'subsample': [0.6, 0.8, 1.0],
         'colsample_bytree': [0.6, 0.8, 1.0]
     }
