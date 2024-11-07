@@ -38,16 +38,31 @@ def train_model(X_train, y_train, param_grid):
 
     print("Training model with RandomizedSearchCV...")
 
+    def fit_with_early_stopping(*args, **kwargs):
+        kwargs.update({
+            'eval_set': [(X_val, y_val)],
+            'early_stopping_rounds': 7,
+            'eval_metric': 'auc',
+            'verbose': True
+        })
+        return original_fit_and_score(*args, **kwargs)
+    
+    original_fit_and_score = random_search._fit_and_score
+    random_search._fit_and_score = fit_with_early_stopping
     random_search.fit(X_train_sub, y_train_sub)
 
-    best_model = random_search.best_estimator_
+    best_params = random_search.best_params_
 
-    best_model.fit(
-        X_train_sub, y_train_sub,
-        eval_set=[(X_val, y_val)],
-        early_stopping_rounds=7,
-        eval_metric='auc',
-        verbose=True
+    d_train = lgb.Dataset(X_train, label=y_train)
+    d_val = lgb.Dataset(X_val, label=y_val, reference=d_train)
+
+    #training best model
+    best_model = lgb.train(
+        best_params,
+        d_train,
+        valid_sets=[d_val],
+        early_stopping_rounds=12,
+        verbose_eval=True
     )
 
     return best_model
@@ -115,7 +130,7 @@ def main():
         'num_leaves': [20, 40, 60],
         'max_depth': [10, 20, 40],
         'learning_rate': [0.01, 0.05, 0.1, 0.2],
-        'n_estimators': [100, 200, 400],
+        'n_estimators': [50, 125, 250, 500],
         'min_child_samples': [20, 50, 100],
         'subsample': [0.6, 0.8, 1.0],
         'colsample_bytree': [0.6, 0.8, 1.0]
