@@ -28,7 +28,7 @@ def train_model(X_train, y_train, param_grid):
     random_search = RandomizedSearchCV(
         estimator=model,
         param_distributions=param_grid,
-        n_iter=25,
+        n_iter=20,
         scoring='roc_auc',
         cv=3,
         random_state=42,
@@ -45,15 +45,15 @@ def train_model(X_train, y_train, param_grid):
     d_train = lgb.Dataset(X_train, label=y_train)
     d_val = lgb.Dataset(X_val, label=y_val, reference=d_train)
 
-    early_stopping_callback = lgb.early_stopping(stopping_rounds=10, verbose=True)
-
     # Train the best model with early stopping callback
     best_model = lgb.train(
         best_params,
         d_train,
         valid_sets=[d_val],
-        callbacks=[early_stopping_callback],
-        verbose_eval=True
+        callbacks=[
+            lgb.early_stopping(stopping_rounds=10, verbose=True),
+            lgb.log_evaluation(period=1)
+        ]
     )
 
     return best_model
@@ -118,7 +118,7 @@ def main():
     X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
 
     param_grid = {
-        'num_leaves': [20, 40, 60],
+        'num_leaves': [20, 40, 80],
         'max_depth': [5, 15, 30],
         'learning_rate': [0.01, 0.05, 0.1],
         'n_estimators': [50, 100, 200],
