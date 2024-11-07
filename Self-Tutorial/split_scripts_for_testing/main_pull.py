@@ -1,6 +1,11 @@
 ########## Run script to pull raw data
+
+import sys
+
+# Add the path to the directory containing the 'Self-Tutorial' folder
+sys.path.append('/content/AI-Healthcare/Self-Tutorial')
  
-from Self-Tutorial.scripts.pull_data import authenticate_and_initialize_client, load_data
+from scripts.pull_data import authenticate_and_initialize_client, load_data
 
 def pull():
     # Authenticate and initialize the BigQuery client

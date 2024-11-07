@@ -1,3 +1,8 @@
+import sys
+
+# Add the path to the directory containing the 'Self-Tutorial' folder
+sys.path.append('/content/AI-Healthcare/Self-Tutorial')
+
 from models.lgbm import main
 from scripts.pull_data import remove_temporary_files
 

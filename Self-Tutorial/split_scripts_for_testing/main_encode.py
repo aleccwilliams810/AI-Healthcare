@@ -1,5 +1,10 @@
 ############ Run script to process/clean raw data and begin feature engineering via encoding and embedding diagnosis codes
 
+import sys
+
+# Add the path to the directory containing the 'Self-Tutorial' folder
+sys.path.append('/content/AI-Healthcare/Self-Tutorial')
+
 from scripts.process_patients import process_patient_data
 from scripts.process_admissions import process_admissions_data
 from scripts.process_diagnoses import process_diagnosis_data
