@@ -58,6 +58,9 @@ def train_model(X_train, y_train, param_grid):
         ]
     )
 
+    print("\nBest Model Parameters and Score:")
+    print(pd.DataFrame([best_params]))
+
     return best_model
 
 def display_metrics(y_test, y_pred, y_pred_proba):
@@ -83,11 +86,6 @@ def save_results(y_test, y_pred, y_pred_proba, metrics_df):
 
     results_df.to_csv('models/model_results.csv', index=False)
     metrics_df.to_csv('models/model_metrics.csv', index=False)
-
-def display_best_params(best_model):
-    best_params = best_model.get_params()
-    print("\nBest Model Parameters and Score:")
-    print(pd.DataFrame([best_params]))
 
 def display_classification_report(y_test, y_pred):
     print("Classification Report:\n", classification_report(y_test, y_pred))
@@ -160,10 +158,10 @@ def main():
     X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
 
     param_grid = {
-        'num_leaves': [20, 50, 100],
-        'max_depth': [5, 15, 45],
+        'num_leaves': [20, 40, 80],
+        'max_depth': [10, 20, 40],
         'learning_rate': [0.01, 0.05, 0.1],
-        'n_estimators': [50, 150, 300],
+        'n_estimators': [50, 125, 250],
         'min_child_samples': [20, 50, 100],
         'subsample': [0.6, 0.8, 1.0],
         'colsample_bytree': [0.6, 0.8, 1.0]
@@ -172,11 +170,11 @@ def main():
     best_model = train_model(X_train, y_train, param_grid)
     y_pred_prob = best_model.predict(X_test)
     y_pred = (y_pred_prob > 0.5).astype(float)
+    
 
     metrics_df = display_metrics(y_test, y_pred, y_pred_prob)
     save_results(y_test, y_pred, y_pred_prob, metrics_df)
     
-    display_best_params(best_model)
     display_classification_report(y_test, y_pred)
     plot_roc_curve(y_test, y_pred_prob)
     plot_confusion_matrix(y_test, y_pred_prob)
