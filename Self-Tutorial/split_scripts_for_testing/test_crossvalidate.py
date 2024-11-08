@@ -20,11 +20,11 @@ def main():
     X_train, y_train = upsample_minority(X_train, y_train) 
 
     param_grid = {
-        'num_leaves': [20, 40, 60],
-        'max_depth': [10, 20, 30],
-        'learning_rate': [0.01, 0.05, 0.1],
-        'n_estimators': [50, 100, 200],
-        'min_child_samples': [20, 50, 100],
+        'num_leaves': [20, 40, 60, 80, 100],
+        'max_depth': [5, 10, 20, 40],
+        'learning_rate': [0.01, 0.05, 0.1, 0.2],
+        'n_estimators': [50, 100, 150, 200],
+        'min_child_samples': [20, 50, 75, 100],
         'subsample': [0.6, 0.8, 1.0],
         'colsample_bytree': [0.6, 0.8, 1.0]
     }
