@@ -30,7 +30,7 @@ def main():
     
     display_classification_report(y_test, y_pred)
     plot_roc_curve(y_test, y_pred_prob)
-    plot_confusion_matrix(y_test, y_pred_prob)
+    plot_confusion_matrix(y_test, y_pred)
 
 if __name__ == "__main__":
     main()

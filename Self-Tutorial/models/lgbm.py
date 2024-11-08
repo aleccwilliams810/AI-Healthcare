@@ -2,8 +2,8 @@ import pandas as pd
 import lightgbm as lgb
 import matplotlib.pyplot as plt
 import seaborn as sns
-import numpy as np
-import json
+
+from sklearn.utils import resample
 
 from sklearn.model_selection import train_test_split, RandomizedSearchCV
 from sklearn.metrics import (
@@ -20,6 +20,25 @@ def load_data(data_path):
         print("Error converting columns to numeric:", e)
     
     return df
+
+def upsample_minority(X_train, y_train):
+    # Combine X and y into a single DataFrame
+    train_data = pd.concat([X_train, y_train], axis=1)
+    
+    # Identify minority and majority 
+    majority_class = train_data[train_data[y_train.name] == 0]
+    minority_class = train_data[train_data[y_train.name] == 1]
+    
+    # Upsample minority
+    minority_upsampled = resample(minority_class, 
+                                  replace=True, 
+                                  n_samples=len(majority_class), 
+                                  random_state=42)
+    
+    upsampled_train = pd.concat([majority_class, minority_upsampled])
+    
+    # return X and y
+    return upsampled_train.drop(y_train.name, axis=1), upsampled_train[y_train.name]
 
 def train_model(X_train, y_train, param_grid):
 
@@ -110,6 +129,7 @@ def plot_confusion_matrix(y_test, y_pred):
     plt.show()
 
 def cross_validate(X_train, y_train, param_grid):
+
     X_train_sub, X_val, y_train_sub, y_val = train_test_split(X_train, y_train, test_size=0.2, random_state=42)
 
     model = lgb.LGBMClassifier(class_weight='balanced', random_state=42)
@@ -156,12 +176,13 @@ def main():
     X = df.drop(columns=['hospital_expire_flag'])
     y = df['hospital_expire_flag']
     X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
+    X_train, y_train = upsample_minority(X_train, y_train) 
 
     param_grid = {
-        'num_leaves': [20, 40, 80],
-        'max_depth': [10, 20, 40],
+        'num_leaves': [20, 40, 60],
+        'max_depth': [10, 20, 30],
         'learning_rate': [0.01, 0.05, 0.1],
-        'n_estimators': [50, 125, 250],
+        'n_estimators': [50, 100, 200],
         'min_child_samples': [20, 50, 100],
         'subsample': [0.6, 0.8, 1.0],
         'colsample_bytree': [0.6, 0.8, 1.0]
@@ -177,7 +198,7 @@ def main():
     
     display_classification_report(y_test, y_pred)
     plot_roc_curve(y_test, y_pred_prob)
-    plot_confusion_matrix(y_test, y_pred_prob)
+    plot_confusion_matrix(y_test, y_pred)
 
 if __name__ == "__main__":
     main()

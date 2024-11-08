@@ -5,7 +5,7 @@ import os
 sys.path.append('/content/AI-Healthcare/Self-Tutorial')
 
 
-from models.lgbm import load_data, cross_validate
+from models.lgbm import load_data, cross_validate, upsample_minority
 from scripts.pull_data import remove_temporary_files, save_processed
 from sklearn.model_selection import train_test_split
 import pandas as pd
@@ -17,12 +17,13 @@ def main():
     X = df.drop(columns=['hospital_expire_flag'])
     y = df['hospital_expire_flag']
     X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
+    X_train, y_train = upsample_minority(X_train, y_train) 
 
     param_grid = {
-        'num_leaves': [20, 40, 80],
-        'max_depth': [10, 20, 40],
+        'num_leaves': [20, 40, 60],
+        'max_depth': [10, 20, 30],
         'learning_rate': [0.01, 0.05, 0.1],
-        'n_estimators': [50, 125, 250],
+        'n_estimators': [50, 100, 200],
         'min_child_samples': [20, 50, 100],
         'subsample': [0.6, 0.8, 1.0],
         'colsample_bytree': [0.6, 0.8, 1.0]
