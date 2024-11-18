@@ -145,15 +145,15 @@ def random_search_ffnn(X, y, param_grid, n_iter=10, sample_fraction=0.1, epochs=
     return best_params
 
 # Full training on best hyperparameters
-def full_training(X, y, best_params, n_components, epochs=30, batch_size=64):
-    # Apply PCA and then select top features
-    X_reduced, pca = apply_pca(X, n_components=n_components)
-    X_selected, _ = select_features(X_reduced, y, k=best_params['num_features'])
+def full_training(X, y, best_params, epochs=30, batch_size=64):
+    X_selected = X[:, best_params['selected_features']]
 
+
+    # Build model using parameters from best_params
     model = build_ffnn(input_dim=X_selected.shape[1],
                        hidden_layers=best_params['hidden_layers'],
                        dropout_rate=best_params['dropout_rate'],
                        learning_rate=best_params['learning_rate'])
 
     history = model.fit(X_selected, y, epochs=epochs, batch_size=batch_size, verbose=1)
-    return model, pca
+    return model, history

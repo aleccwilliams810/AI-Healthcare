@@ -5,6 +5,7 @@ sys.path.append('/content/AI-Healthcare/ML_DL')
 
 import pandas as pd
 import pickle
+import json
 from models.build_nn import load_data, preprocess_data, apply_pca, random_search_ffnn
 
 def main():
@@ -38,9 +39,8 @@ def main():
     # Perform random search with sampled data and reduced dimensionality
     best_params = random_search_ffnn(X_reduced, y, param_grid, n_iter=10, sample_fraction=0.1, epochs=10, batch_size=32, initial_k_values=[10, 20, 30])
 
-    # Save best parameters
-    best_params_df = pd.DataFrame([best_params])
-    best_params_df.to_csv('models/best_params_cv.csv', index=False)
+    with open('models/best_params_cv.json', 'w') as f:
+        json.dump(best_params, f, indent=4)
 
 if __name__ == "__main__":
     main()
