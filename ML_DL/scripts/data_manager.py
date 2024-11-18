@@ -15,7 +15,7 @@ def load_data(client):
     SELECT 
     subject_id,
     gender,
-    CAST(dob AS DATE) AS dob
+    anchor_age
     FROM `physionet-data.mimiciv_3_1_hosp.patients` pat
     """
 
