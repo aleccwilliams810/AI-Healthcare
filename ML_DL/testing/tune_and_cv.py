@@ -40,7 +40,7 @@ def main():
 
     # Save best parameters
     best_params_df = pd.DataFrame([best_params])
-    best_params_df.to_csv('results/best_params_cv.csv', index=False)
+    best_params_df.to_csv('models/best_params_cv.csv', index=False)
 
 if __name__ == "__main__":
     main()

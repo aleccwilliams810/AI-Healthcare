@@ -15,7 +15,7 @@ def main():
 
     # Load best parameters from cross-validation
     print("Loading best parameters from cross-validation...")
-    best_params = pd.read_csv('results/best_params_cv.csv').to_dict(orient='records')[0]
+    best_params = pd.read_csv('models/best_params_cv.csv').to_dict(orient='records')[0]
 
     # Use the number of features (`k`) saved during CV
     num_features = best_params['num_features']
@@ -50,7 +50,7 @@ def main():
         'y_true': y,
         'y_pred': y_pred,
         'y_pred_proba': y_pred_proba
-    }).to_csv('results/final_predictions.csv', index=False)
+    }).to_csv('models/final_predictions.csv', index=False)
 
 if __name__ == "__main__":
     main()

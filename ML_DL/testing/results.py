@@ -10,7 +10,7 @@ from scripts.display_results import display_metrics, plot_confusion_matrix, plot
 def main():
     # Load predictions and ground truth
     print("Loading predictions and ground truth...")
-    predictions = pd.read_csv('results/final_predictions.csv')
+    predictions = pd.read_csv('models/final_predictions.csv')
     y_true = predictions['y_true']
     y_pred = predictions['y_pred']
     y_pred_proba = predictions['y_pred_proba']
