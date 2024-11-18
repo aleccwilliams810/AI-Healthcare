@@ -57,6 +57,10 @@ def build_ffnn(input_dim, hidden_layers=[64, 32], dropout_rate=0.2, learning_rat
 
 # Train and evaluate model with cross-validation
 def train_evaluate_model(X, y, hidden_layers, dropout_rate, n_splits=4, epochs=10, batch_size=32):
+
+    if isinstance(y, pd.Series):
+        y = y.values
+        
     kfold = KFold(n_splits=n_splits, shuffle=True, random_state=23)
     metrics = []
 

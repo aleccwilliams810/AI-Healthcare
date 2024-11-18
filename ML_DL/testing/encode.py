@@ -1,3 +1,8 @@
+import sys
+
+# Add the path to the directory
+sys.path.append('/content/AI-Healthcare/ML_DL')
+
 from scripts.pat_processing import process_patient_data
 from scripts.adm_processing import process_admissions_data
 from scripts.diag_processing import process_diagnosis_data

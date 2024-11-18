@@ -15,8 +15,8 @@ def load_data(client):
     SELECT 
     subject_id,
     gender,
-    anchor_age
-    FROM `physionet-data.mimiciv_3_1_hosp.patients` pat
+    CAST(dob AS DATE) AS dob
+    FROM `physionet-data.mimiciii_clinical.patients` pat
     """
 
     admissions_table = """
@@ -31,7 +31,7 @@ def load_data(client):
     ethnicity,
     diagnosis AS consult_diagnosis,
     hospital_expire_flag
-    FROM `physionet-data.mimiciv_3_1_hosp.admissions` adm
+    FROM `physionet-data.mimiciii_clinical.admissions` adm
     """
 
     diag_table = """
@@ -41,7 +41,7 @@ def load_data(client):
         diag.icd9_code AS diag_code,
         long_title AS diag_code_desc
     FROM `physionet-data.mimiciii_clinical.diagnoses_icd` diag
-    INNER JOIN `physionet-data.mimiciv_3_1_hosp.d_icd_diagnoses` diagdesc
+    INNER JOIN `physionet-data.mimiciii_clinical.d_icd_diagnoses` diagdesc
         ON diag.icd9_code = diagdesc.icd9_code
     """
 

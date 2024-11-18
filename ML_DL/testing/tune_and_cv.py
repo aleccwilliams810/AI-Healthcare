@@ -1,3 +1,8 @@
+import sys
+
+# Add the path to the directory
+sys.path.append('/content/AI-Healthcare/ML_DL')
+
 import pandas as pd
 import pickle
 from models.build_nn import load_data, preprocess_data, apply_pca, random_search_ffnn
@@ -22,7 +27,7 @@ def main():
 
     print("PCA-transformed dataset and PCA object saved.")
 
-    
+
     # Hyperparameter search space
     param_grid = {
         'hidden_layers': [[128, 64], [64, 32, 16], [256, 128]],

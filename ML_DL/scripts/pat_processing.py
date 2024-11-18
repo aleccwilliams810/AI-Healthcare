@@ -1,5 +1,4 @@
 import pandas as pd
-import numpy as np
 from scripts.data_manager import save_processed
 
 def process_patient_data(csv_file):

@@ -1,3 +1,8 @@
+import sys
+
+# Add the path to the directory
+sys.path.append('/content/AI-Healthcare/ML_DL')
+
 import pandas as pd
 import pickle
 from scripts.display_results import display_metrics, plot_confusion_matrix, plot_roc_curve, plot_training_history

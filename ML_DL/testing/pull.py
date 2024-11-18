@@ -1,3 +1,8 @@
+import sys
+
+# Add the path to the directory
+sys.path.append('/content/AI-Healthcare/ML_DL')
+
 from scripts.data_manager import authenticate_and_initialize_client, load_data
 
 def pull():

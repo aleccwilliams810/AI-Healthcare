@@ -1,3 +1,8 @@
+import sys
+
+# Add the path to the directory
+sys.path.append('/content/AI-Healthcare/ML_DL')
+
 import pandas as pd
 import pickle
 from models.build_nn import full_training

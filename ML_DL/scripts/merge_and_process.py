@@ -21,3 +21,26 @@ def join_data():
     merged_df = merged_df.merge(diagnoses_df, on='subject_id', how='inner')
     
     return merged_df
+
+
+def calc_age(df):
+    #Calculates patient age in days and removes extreme outliers. Outliers must be removed before applying '.dt.days'
+    #Drops unnecessary columns after processing.
+
+    df['dob'] = pd.to_datetime(df['dob'], errors='coerce')
+    df['admittime'] = pd.to_datetime(df['admittime'], errors='coerce')
+
+    df['age_yrs'] = df['admittime'].dt.year - df['dob'].dt.year
+
+    df = df[df['age_yrs'] <= 120]
+
+    df['age_days'] = (df['admittime'] - df['dob']).dt.days 
+
+    df.drop(columns=['dob', 'admittime', 'age_yrs'], inplace=True)
+
+    return df
+
+
+
+
+
