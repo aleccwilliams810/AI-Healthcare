@@ -5,6 +5,7 @@ from sklearn.preprocessing import StandardScaler
 from sklearn.feature_selection import SelectKBest, mutual_info_classif
 from sklearn.decomposition import PCA
 from sklearn.metrics import accuracy_score, roc_auc_score, precision_score, recall_score, f1_score
+from sklearn.utils import resample
 from tensorflow.keras.models import Sequential
 from tensorflow.keras.layers import Dense, Dropout, BatchNormalization
 from tensorflow.keras.optimizers import Adam
@@ -22,6 +23,24 @@ def preprocess_data(df, target_column):
     scaler = StandardScaler()
     X_scaled = scaler.fit_transform(X)
     return X_scaled, y
+
+def upsample_minority(X_train, y_train):
+    # Combine X and y into a single DataFrame
+    train_data = pd.concat([pd.DataFrame(X_train), pd.Series(y_train, name='target')], axis=1)
+    
+    # Identify the majority and minority classes
+    majority_class = train_data[train_data['target'] == 0]
+    minority_class = train_data[train_data['target'] == 1]
+    
+    # Upsample minority
+    minority_upsampled = resample(minority_class,
+                                  replace=True,
+                                  n_samples=len(majority_class),
+                                  random_state=23)
+    
+    # Combine back
+    upsampled_train = pd.concat([majority_class, minority_upsampled])
+    return upsampled_train.drop(columns='target').values, upsampled_train['target'].values
 
 # Feature selection
 def select_features(X, y, k):
@@ -60,7 +79,7 @@ def train_evaluate_model(X, y, hidden_layers, dropout_rate, n_splits=4, epochs=1
 
     if isinstance(y, pd.Series):
         y = y.values
-        
+
     kfold = KFold(n_splits=n_splits, shuffle=True, random_state=23)
     metrics = []
 
@@ -68,9 +87,11 @@ def train_evaluate_model(X, y, hidden_layers, dropout_rate, n_splits=4, epochs=1
         X_train, X_val = X[train_idx], X[val_idx]
         y_train, y_val = y[train_idx], y[val_idx]
 
-        model = build_ffnn(input_dim=X_train.shape[1], hidden_layers=hidden_layers, dropout_rate=dropout_rate)
+        X_train_upsampled, y_train_upsampled = upsample_minority(X_train, y_train)
 
-        history = model.fit(X_train, y_train, epochs=epochs, batch_size=batch_size, verbose=0, validation_data=(X_val, y_val))
+        model = build_ffnn(input_dim=X_train_upsampled.shape[1], hidden_layers=hidden_layers, dropout_rate=dropout_rate)
+
+        history = model.fit(X_train_upsampled, y_train_upsampled, epochs=epochs, batch_size=batch_size, verbose=0, validation_data=(X_val, y_val))
 
         # Evaluate on validation set
         y_pred_prob = model.predict(X_val).ravel()
@@ -110,7 +131,7 @@ def random_search_ffnn(X, y, param_grid, n_iter=10, sample_fraction=0.1, epochs=
                 X_sample_selected, y_sample,
                 hidden_layers=params['hidden_layers'],
                 dropout_rate=params['dropout_rate'],
-                n_splits=3, epochs=epochs, batch_size=batch_size
+                n_splits=4, epochs=epochs, batch_size=batch_size
             )
 
             print(f"ROC AUC for current config: {avg_metrics['roc_auc']:.4f}")
