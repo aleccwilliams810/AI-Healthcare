@@ -31,13 +31,14 @@ def main():
 
     # Hyperparameter search space
     param_grid = {
-        'hidden_layers': [[128, 64], [64, 32, 16], [256, 128]],
-        'dropout_rate': [0.1, 0.2, 0.3, 0.5],
-        'learning_rate': [0.001, 0.01, 0.1]
+        'hidden_layers': [[128, 64], [64, 32, 16], [256, 128], [128, 128, 64]],  # Add variations in depth
+        'dropout_rate': [0.1, 0.2, 0.3, 0.4, 0.5],  # Include more intermediate rates
+        'learning_rate': [0.0001, 0.001, 0.01, 0.1],  # Add smaller learning rates for better tuning
+        'l2_reg': [0.001, 0.005, 0.01, 0.05, 0.1]  # Include L2 regularization rates for weight penalties
     }
 
     # Perform random search with sampled data and reduced dimensionality
-    best_params = random_search_ffnn(X_reduced, y, param_grid, n_iter=10, sample_fraction=0.1, epochs=10, batch_size=32, initial_k_values=[10, 20, 30])
+    best_params = random_search_ffnn(X_reduced, y, param_grid, n_iter=15, sample_fraction=0.2, epochs=10, batch_size=32, initial_k_values=[20, 30, 40])
 
     with open('models/best_params_cv.json', 'w') as f:
         json.dump(best_params, f, indent=4)

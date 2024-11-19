@@ -1,176 +1,71 @@
-README: Predictive Modeling Project
+# **Predicting Patient Mortality with Feedforward Neural Networks (FFNN)**
 
-Overview
+## **Project Overview**
+This project aims to develop a predictive modeling pipeline to assist hospitals in prioritizing duties and allocating resources effectively. Using a **Feedforward Neural Network (FFNN)**, the model predicts patient mortality during early hospital evaluation based on limited data from **Patients**, **Admissions**, and **Diagnosis** tables of the MIMIC-III DataBase. This project builds on the initial analysis and model developed in the Self-Tutorial.
 
-This project implements a predictive modeling pipeline for binary classification using a Feedforward Neural Network (FFNN). The pipeline includes:
+### **Goals**
+- Predict patient mortality using minimal available data at admission.
+- Engineer features to maximize prediction accuracy.
+- Lay the groundwork for deploying multiple models at different stages of a patient’s hospital stay.
 
-Data Preprocessing: Cleaning and scaling the data.
+---
 
-Feature Engineering: Dimensionality reduction with PCA, feature selection, and embedding.
+## **Pipeline Overview**
 
-Model Training: Fine-tuning hyperparameters using cross-validation and random search.
+### **1. Data Preparation**
+- **Preprocessing**: Clean, impute, and scale raw hospital data.
+- **Feature Engineering**:
+  - **One-Hot encoding** for some categorical features
+  -**Custom encoding** for other categorical features
+  - **Text embeddings** for diagnosis descriptions with **Sci-Spacy**
+  - **KMeans clustering** of embedded diagnostic descriptions
+  - **Flattenting** of patient data
 
-Final Model Training: Training the best model with optimal parameters on the processed dataset.
+### **2. Model Development**
+  - Dimensionality reduction with **PCA**.
+  - Selection of important features via mutual information
+- **Hyperparameter Tuning**: Optimize parameters using **cross-validation** and **random search**.
+- **Final Training**: Train the model with selected features and best hyperparameters.
 
-Evaluation: Generating metrics, confusion matrices, ROC curves, and training history for analysis.
+### **3. Evaluation**
+- **Metrics**: ROC AUC, precision, recall, F1-score, and accuracy.
+- **Visualizations**:
+  - ROC Curve
+  - Confusion Matrix
+  - Training History (Loss and Accuracy trends)
 
-Folder Structure
+---
 
+## **Folder Structure**
 project/
 ├── models/
-│   ├── final_model.h5
-│   ├── training_history.pkl
-│   ├── pca.pkl
-├── results/
-│   ├── best_params_cv.csv
-│   ├── final_predictions.csv
-│   ├── confusion_matrix.pkl
-│   ├── roc_curve.pkl
+│   ├── __init__.py             
+│   ├── build_nn.py              # Model functions, including random search tuning, CV, and dimenisonality reduction
+│   ├── final_model.h5           # Trained FFNN model
+│   ├── training_history.pkl     # Training history
+│   ├── pca.pkl                  # PCA object for reuse
+│   ├── best_params_cv.json      # Optimal hyperparameters
+│   ├── final_predictions.csv    # Model predictions and probabilities
+│   ├── confusion_matrix.pkl     # Serialized confusion matrix
+│   ├── roc_curve.pkl            # Serialized ROC curve data
 ├── data/
-│   ├── processed/
-│   │   ├── model_inputs.csv
-│   │   ├── X_pca.parquet
-│   │   ├── y_pca.parquet
+    will be dynamically filled during execution
 ├── scripts/
-│   ├── pull_data.py
-│   ├── encode_features.py
-│   ├── embed_descriptions.py
-│   ├── cluster_embeddings.py
-│   ├── tune_and_cv.py
-│   ├── train_model.py
-│   ├── display_final_results.py
-│   ├── main_pipeline.py
-├── README.md
-
-Installation
-
-Clone the repository:
-
-git clone <repository_url>
-cd project
-
-Set up a virtual environment:
-
-python -m venv venv
-source venv/bin/activate   # On Windows, use `venv\Scripts\activate`
-
-Install dependencies:
-
-pip install -r requirements.txt
-
-Install additional tools (if required):
-
-Install SciSpacy model:
-
-pip install https://s3-us-west-2.amazonaws.com/ai2-s2-scispacy/releases/v0.5.0/en_core_sci_md-0.5.0.tar.gz
-
-Usage
-
-Run Full Pipeline
-
-The pipeline can be executed by running the main script:
-
-python scripts/main_pipeline.py
-
-Individual Scripts
-
-Pull Data: Download and preprocess raw data.
-
-python scripts/pull_data.py
-
-Encode Features: Apply encoding to categorical variables.
-
-python scripts/encode_features.py
-
-Embed Descriptions: Generate embeddings for text-based features.
-
-python scripts/embed_descriptions.py
-
-Cluster Embeddings: Cluster embeddings to group similar text features.
-
-python scripts/cluster_embeddings.py
-
-Tune and Cross-Validate: Perform hyperparameter tuning using random search.
-
-python scripts/tune_and_cv.py
-
-Train Final Model: Train the model using the best parameters from tuning.
-
-python scripts/train_model.py
-
-Display Results: Generate final results, including metrics and visualizations.
-
-python scripts/display_final_results.py
-
-Outputs
-
-Model Artifacts
-
-models/final_model.h5: The trained FFNN model.
-
-models/training_history.pkl: Training history for analysis.
-
-models/pca.pkl: PCA transformation object for future use.
-
-Results
-
-results/best_params_cv.csv: Best hyperparameters from cross-validation.
-
-results/final_predictions.csv: Predictions and probabilities from the final model.
-
-results/confusion_matrix.pkl: Serialized confusion matrix.
-
-results/roc_curve.pkl: Serialized ROC curve data.
-
-Processed Data
-
-data/processed/X_pca.parquet: PCA-transformed features.
-
-data/processed/y_pca.parquet: Target values.
-
-Visualizations
-
-The following visualizations are generated using display_final_results.py:
-
-Metrics: Accuracy, precision, recall, and F1 score.
-
-Confusion Matrix: Heatmap visualization.
-
-ROC Curve: Visual representation of the model's performance.
-
-Training History: Loss and accuracy trends during training.
-
-Customization
-
-Adjusting PCA Components: Modify the number of components in apply_pca to balance dimensionality and model performance.
-
-Hyperparameter Tuning: Update param_grid in tune_and_cv.py to explore additional configurations.
-
-Feature Selection: Modify initial_k_values to test different numbers of selected features during tuning.
-
-Requirements
-
-Python 3.8+
-
-TensorFlow
-
-SciPy
-
-Pandas
-
-NumPy
-
-SciKit-Learn
-
-Matplotlib
-
-Seaborn
-
-License
-
-This project is licensed under the MIT License. See LICENSE for more details.
-
-Acknowledgments
-
-Special thanks to the teams behind TensorFlow, SciSpacy, and SciKit-Learn for providing the tools to build this pipeline.
-
+│   ├── __init__.py             
+│   ├── data_manager.py          # Data collection and storage functions
+│   ├── pat_processing.py        # Processing of Patient Table
+│   ├── adm_processing.py        # Processing of Admissions Table
+│   ├── diag_processing.py       # Processing of Diagnoses Table
+│   ├── merge_and_process.py     # Join and post-process
+│   ├── apply_embeddings.py      # Embedding functions
+│   ├── apply_kmeans.py          # Clustering functions
+│   ├── display_results.py       # Final model result display functions
+├── testing/
+│   ├── __init__.py             
+│   ├── pull.py                  # Data collection test
+│   ├── encode.py                # Encoding test
+│   ├── embed.py                 # Embedding
+│   ├── cluster.py               # Clustering test
+│   ├── tune_and_cv.py           # Feature selection, hyperparam search, and CV testing
+│   ├── train_model.py           # Final Model test
+│   ├── results.py               # Test displaying results
