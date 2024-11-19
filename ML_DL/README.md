@@ -69,3 +69,34 @@ project/
 │   ├── tune_and_cv.py           # Feature selection, hyperparam search, and CV testing
 │   ├── train_model.py           # Final Model test
 │   ├── results.py               # Test displaying results
+├── venv/
+├── main.py
+├── README.md
+├── requirements.txt
+
+
+## **Installation**
+
+1. Clone the repository:
+   ```bash
+   git clone https://github.com/aleccwilliams810/AI-Healthcare.git
+   cd AI-Healthcare
+
+2. Set up Venv
+python -m venv venv
+source venv/bin/activate  # On Windows, use `venv\Scripts\activate`
+
+3. Install Dependencies and SciSpacy Model
+pip install -r requirements.txt
+pip install https://s3-us-west-2.amazonaws.com/ai2-s2-scispacy/releases/v0.5.0/en_core_sci_md-0.5.0.tar.gz
+
+
+## **Acknowledgments**
+- **MIMIC-III Database**: The dataset used in this project is sourced from the publicly available MIMIC-III database.
+- **SciSpacy**: Text embeddings were generated using SciSpacy models.
+- **TensorFlow/Keras**: Model development and training were conducted using TensorFlow/Keras.
+
+## **References**
+1. MIMIC-III Clinical Database: [https://physionet.org/content/mimiciii/](https://physionet.org/content/mimiciii/)
+2. SciSpacy Models: [https://allenai.org/data/scispacy](https://allenai.org/data/scispacy)
+3. TensorFlow Documentation: [https://www.tensorflow.org/](https://www.tensorflow.org/)
