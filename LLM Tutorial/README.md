@@ -45,3 +45,5 @@ Only a few example functions are implemented.
 ## Notes
 - This project is for educational purposes and does not provide medical advice.
 - Ensure models are served locally via Ollama for optimal performance.
+
+https://github.com/aleccwilliams810/AI-Healthcare.git
