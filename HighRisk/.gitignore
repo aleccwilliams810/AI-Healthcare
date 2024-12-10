@@ -1,0 +1,11 @@
+# Ignore virtual environment
+venv/
+
+# Ignore large library files
+*.dll
+*.lib
+
+# Ignore temporary or IDE-specific files
+*.pyc
+__pycache__/
+.vscode/
